@@ -1,55 +1,99 @@
-const CF_BASE_URL = 'https://eport9.com/pinpoint/pinpointWSMobile/PinPointWSMobileVmcv.cfc';
-const AUTH_TOKEN = 'cHB0bWJsc3ZjOmwkbW43IWpoKnE=';
+const BASE = 'https://pinpoint-web-five.vercel.app/api';
 
-export async function apiFetch(method, params = {}) {
-  const queryParams = new URLSearchParams({
-    method,
-    AuthVerify: AUTH_TOKEN,
-    ...params
-  });
-
+async function get(path) {
   let response;
   try {
-    response = await fetch(`${CF_BASE_URL}?${queryParams}`);
+    response = await fetch(`${BASE}${path}`);
   } catch (_) {
     throw new Error('Unable to connect. Please check your connection and try again.');
   }
-  const rawText = await response.text();
-  const cleanText = rawText.replace(/--->/g, '').replace(/F$/, '').trim();
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  const { data } = await response.json();
+  return data;
+}
 
-  if (!response.ok) throw new Error(`API error: ${response.status}: ${cleanText.substring(0, 400)}`);
-
+async function post(path, body) {
+  let response;
   try {
-    return JSON.parse(cleanText);
-  } catch (err) {
-    throw new Error(`JSON parse error: ${cleanText.substring(0, 200)}`);
+    response = await fetch(`${BASE}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (_) {
+    throw new Error('Unable to connect. Please check your connection and try again.');
+  }
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  const { data } = await response.json();
+  return data;
+}
+
+async function put(path, body) {
+  let response;
+  try {
+    response = await fetch(`${BASE}${path}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (_) {
+    throw new Error('Unable to connect. Please check your connection and try again.');
+  }
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  const { data } = await response.json();
+  return data;
+}
+
+// Compatibility shim — maps CF method names to new API routes
+export async function apiFetch(method, params = {}) {
+  switch (method) {
+    case 'UserLogin':
+      return post('/login', { email: atob(params.authUser), password: atob(params.authPassword) });
+    case 'GetMemberProfile':
+      return get(`/profile/${params.CustomerID || params.CustomerId}`);
+    case 'MemberUpdate':
+      return put(`/profile/${params.CustomerID}`, params);
+    case 'MemberEnrollment':
+      return post('/enroll', params);
+    case 'ForgotPassword':
+      return post('/forgot-password', { email: params.email });
+    case 'GetDivisionList':
+      return get('/divisions');
+    case 'MerchantListing':
+      return get(`/merchants?marketId=${params.sMarket || 1}`);
+    case 'MerchantDetail':
+      return get(`/merchants/${params.MerchantId}`);
+    case 'MemberRewards':
+      return get(`/rewards/${params.CustomerId}`);
+    case 'RecentTransactions':
+      return get(`/transactions/${params.CustomerId}`);
+    case 'PointsAccumulated':
+      return get(`/points/${params.CustomerId}`);
+    default:
+      throw new Error(`Unknown method: ${method}`);
   }
 }
 
 export async function getMyCard(customerId) {
-  const id = parseInt(customerId, 10);
-  if (!id || isNaN(id)) throw new Error('Invalid customer ID');
-  return apiFetch('PointsAccumulated', { CustomerId: id, platformtype: 2 });
+  return get(`/profile/${customerId}`);
 }
 
 export async function getMemberProfile(customerId) {
-  const id = parseInt(customerId, 10);
-  if (!id || isNaN(id)) throw new Error('Invalid customer ID');
-  return apiFetch('GetMemberProfile', { CustomerID: id, platformtype: 2, returnformat: 'json' });
+  return get(`/profile/${customerId}`);
 }
 
 export async function enrollMember(params = {}) {
-  return apiFetch('MemberEnrollment', params);
+  return post('/enroll', params);
 }
 
 export async function forgotPassword(email) {
-  return apiFetch('ForgotPassword', { email: email.trim(), PlatformType: 2 });
+  return post('/forgot-password', { email });
 }
 
 export async function getDivisions() {
-  return apiFetch('GetDivisionList', { PlatformType: 2 });
+  return get('/divisions');
 }
 
 export async function updateProfile(customerId, params = {}) {
-  return apiFetch('MemberUpdate', { CustomerID: customerId, PlatformType: 2, ...params });
+  return put(`/profile/${customerId}`, params);
 }
