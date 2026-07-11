@@ -48,7 +48,7 @@ async function put(path, body) {
 export async function apiFetch(method, params = {}) {
   switch (method) {
     case 'UserLogin':
-      return post('/login', { email: atob(params.authUser), password: atob(params.authPassword) });
+      return post('/login', { email: atob(params.authUser), password: atob(params.authPassword), platform: 'mobile' });
     case 'GetMemberProfile':
       return get(`/profile/${params.CustomerID || params.CustomerId}`);
     case 'MemberUpdate':
