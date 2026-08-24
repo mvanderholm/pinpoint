@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
+  ScrollView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Linking,
 } from 'react-native';
 import { enrollMember } from '../api';
 import analytics from '../analytics';
@@ -77,6 +77,7 @@ export default function EnrollmentScreen({ navigation }) {
   // Step 3 — Personal (optional)
   const [birthMonth, setBirthMonth] = useState(0);
   const [gender, setGender] = useState(0);
+  const [tosAccepted, setTosAccepted] = useState(false);
 
   // Per-field inline errors
   const [errors, setErrors] = useState({});
@@ -137,6 +138,10 @@ export default function EnrollmentScreen({ navigation }) {
   // --- Submit ---
 
   const handleSubmit = async () => {
+    if (!tosAccepted) {
+      setError('tos', 'You must agree to the Terms of Service to continue.');
+      return;
+    }
     setLoading(true);
     analytics.track('SignupSubmitted');
     try {
@@ -441,6 +446,34 @@ export default function EnrollmentScreen({ navigation }) {
           </>
         )}
 
+        {/* ToS consent — step 3 only */}
+        {step === 3 && (
+          <View style={styles.tosWrap}>
+            <TouchableOpacity
+              style={styles.tosRow}
+              onPress={() => { setTosAccepted(v => !v); clearError('tos'); }}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: tosAccepted }}
+              accessibilityLabel="I agree to the Terms of Service and Privacy Policy"
+            >
+              <View style={[styles.checkbox, tosAccepted && styles.checkboxChecked]}>
+                {tosAccepted && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+              <Text style={styles.tosText}>
+                I agree to the{' '}
+                <Text style={styles.tosLink} onPress={() => Linking.openURL('https://www.pinpointrewards.com/terms/')}>
+                  Terms of Service
+                </Text>
+                {' '}and{' '}
+                <Text style={styles.tosLink} onPress={() => Linking.openURL('https://www.pinpointrewards.com/privacy/')}>
+                  Privacy Policy
+                </Text>
+              </Text>
+            </TouchableOpacity>
+            {errors.tos && <Text style={styles.errorText}>{errors.tos}</Text>}
+          </View>
+        )}
+
         {/* Actions */}
         {step < 3 ? (
           <TouchableOpacity style={styles.button} onPress={handleNext} accessibilityRole="button" accessibilityLabel="Next step">
@@ -636,6 +669,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
+
+  // ToS consent
+  tosWrap: { marginTop: 8, marginBottom: 4 },
+  tosRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  checkbox: {
+    width: 20, height: 20, borderRadius: 4, borderWidth: 1.5,
+    borderColor: '#c0c8d8', backgroundColor: '#fff',
+    alignItems: 'center', justifyContent: 'center', marginTop: 1, flexShrink: 0,
+  },
+  checkboxChecked: { backgroundColor: '#1a73e8', borderColor: '#1a73e8' },
+  checkmark: { color: '#fff', fontSize: 12, fontWeight: '700' },
+  tosText: { flex: 1, fontSize: 13, color: '#555', lineHeight: 20 },
+  tosLink: { color: '#1a73e8', textDecorationLine: 'underline' },
 
   // Success
   successContainer: {

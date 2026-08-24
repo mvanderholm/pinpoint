@@ -28,6 +28,17 @@ async function post(path, body) {
   return data;
 }
 
+async function del(path) {
+  let response;
+  try {
+    response = await fetch(`${BASE}${path}`, { method: 'DELETE' });
+  } catch (_) {
+    throw new Error('Unable to connect. Please check your connection and try again.');
+  }
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  return response.json();
+}
+
 async function put(path, body) {
   let response;
   try {
@@ -96,4 +107,16 @@ export async function getDivisions() {
 
 export async function updateProfile(customerId, params = {}) {
   return put(`/profile/${customerId}`, params);
+}
+
+export async function getAppConfig() {
+  return get('/config');
+}
+
+export async function deleteAccount(customerId) {
+  return del(`/profile/${customerId}`);
+}
+
+export async function resendVerification(email) {
+  return post('/resend-verification', { email });
 }

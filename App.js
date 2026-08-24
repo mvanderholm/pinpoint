@@ -1,8 +1,10 @@
-import { Component, useState } from 'react';
+import { Component, useState, useEffect } from 'react';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Platform, View, Text, TouchableOpacity, StyleSheet, Modal, Linking } from 'react-native';
+import Constants from 'expo-constants';
+import { getAppConfig } from './api';
 import { AuthProvider, useAuth } from './AuthContext';
 import { recordError } from './crashlytics';
 import { Ionicons } from '@expo/vector-icons';
@@ -61,6 +63,46 @@ const errorStyles = StyleSheet.create({
   body: { fontSize: 15, color: '#666', textAlign: 'center', lineHeight: 24, marginBottom: 32 },
   button: { backgroundColor: '#1a73e8', borderRadius: 8, paddingVertical: 12, paddingHorizontal: 32 },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+});
+
+const IOS_STORE_URL = 'https://apps.apple.com/app/id533124525';
+const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=com.pinpoint.mobile';
+
+function compareVersions(a, b) {
+  const pa = String(a).split('.').map(Number);
+  const pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] || 0) < (pb[i] || 0)) return -1;
+    if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+  }
+  return 0;
+}
+
+function ForceUpdateModal() {
+  const storeUrl = Platform.OS === 'ios' ? IOS_STORE_URL : ANDROID_STORE_URL;
+  return (
+    <Modal visible animationType="fade" transparent={false} statusBarTranslucent>
+      <View style={updateStyles.container}>
+        <Text style={updateStyles.appName}>PinPoint Rewards</Text>
+        <Text style={updateStyles.title}>Update Required</Text>
+        <Text style={updateStyles.body}>
+          A new version of the app is required to continue. Please update to the latest version.
+        </Text>
+        <TouchableOpacity style={updateStyles.button} onPress={() => Linking.openURL(storeUrl)}>
+          <Text style={updateStyles.buttonText}>Update Now</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
+}
+
+const updateStyles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: '#f4f6f9' },
+  appName: { fontSize: 13, fontWeight: '700', color: '#1a73e8', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 24 },
+  title: { fontSize: 26, fontWeight: '700', color: '#1a2a4a', marginBottom: 16, textAlign: 'center' },
+  body: { fontSize: 15, color: '#666', textAlign: 'center', lineHeight: 24, marginBottom: 40 },
+  button: { backgroundColor: '#1a73e8', borderRadius: 12, paddingVertical: 14, paddingHorizontal: 48 },
+  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
 });
 
 const Tab = createBottomTabNavigator();
@@ -199,8 +241,22 @@ function AuthGatedNavigator() {
 
 function AppInner() {
   const [currentRoute, setCurrentRoute] = useState('Landing');
+  const [updateRequired, setUpdateRequired] = useState(false);
   const { isWide } = useBreakpoint();
   const isWeb = Platform.OS === 'web';
+
+  useEffect(() => {
+    if (isWeb) return;
+    getAppConfig().then(config => {
+      const minVersion = Platform.OS === 'ios'
+        ? config?.min_ios_version
+        : config?.min_android_version;
+      const currentVersion = Constants.expoConfig?.version ?? '0.0.0';
+      if (minVersion && minVersion !== '0.0.0' && compareVersions(currentVersion, minVersion) < 0) {
+        setUpdateRequired(true);
+      }
+    }).catch(() => {});
+  }, []);
 
   const handleStateChange = () => {
     if (navigationRef.isReady()) {
@@ -224,7 +280,12 @@ function AppInner() {
     );
   }
 
-  return navContainer;
+  return (
+    <>
+      {navContainer}
+      {updateRequired && <ForceUpdateModal />}
+    </>
+  );
 }
 
 export default function App() {

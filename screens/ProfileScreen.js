@@ -6,7 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useAuth } from '../AuthContext';
-import { apiFetch, updateProfile } from '../api';
+import { apiFetch, updateProfile, deleteAccount } from '../api';
 import { recordError } from '../crashlytics';
 import analytics from '../analytics';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -52,6 +52,7 @@ export default function ProfileScreen({ navigation }) {
   const [txFilterMerchant, setTxFilterMerchant] = useState(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [editFirst, setEditFirst] = useState('');
   const [editLast, setEditLast] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -128,18 +129,35 @@ export default function ProfileScreen({ navigation }) {
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
-      'This will permanently delete your account and all your rewards data. This cannot be undone.\n\nA deletion request will be sent to our support team.',
+      'This will permanently delete your account and all accumulated points and rewards. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Request Deletion',
+          text: 'Continue',
           style: 'destructive',
           onPress: () => {
-            const subject = encodeURIComponent('Account Deletion Request');
-            const body = encodeURIComponent(
-              `Please delete my PinPoint account.\n\nAccount email: ${user}\nCustomer ID: ${customerId}\n\nI understand this is permanent and cannot be undone.`
+            Alert.alert(
+              'Are you sure?',
+              'Your account will be deleted immediately. All points and rewards data will be lost forever.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Delete My Account',
+                  style: 'destructive',
+                  onPress: async () => {
+                    setDeleting(true);
+                    try {
+                      await deleteAccount(customerId);
+                      logout();
+                    } catch (err) {
+                      recordError(err);
+                      setDeleting(false);
+                      Alert.alert('Error', 'Could not delete account. Please try again or contact support@pinpointrewards.com.');
+                    }
+                  },
+                },
+              ]
             );
-            Linking.openURL(`mailto:info@pinpointrewards.com?subject=${subject}&body=${body}`);
           },
         },
       ]
@@ -350,8 +368,12 @@ export default function ProfileScreen({ navigation }) {
             <TouchableOpacity style={[styles.signOutBtn, isWide && { marginHorizontal: 0 }]} onPress={handleSignOut}>
               <Text style={styles.signOutText}>Sign Out</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.deleteAccountBtn, isWide && { marginHorizontal: 0 }]} onPress={handleDeleteAccount}>
-              <Text style={styles.deleteAccountText}>Delete Account</Text>
+            <TouchableOpacity
+              style={[styles.deleteAccountBtn, isWide && { marginHorizontal: 0 }, deleting && { opacity: 0.4 }]}
+              onPress={handleDeleteAccount}
+              disabled={deleting}
+            >
+              <Text style={styles.deleteAccountText}>{deleting ? 'Deleting…' : 'Delete Account'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -447,6 +469,9 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.sectionTitle}>Legal</Text>
         <TouchableOpacity onPress={() => navigation.navigate('PrivacyPolicy')}>
           <Text style={styles.contactLink}>Privacy Policy</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => Linking.openURL('https://www.pinpointrewards.com/terms/')}>
+          <Text style={styles.contactLink}>Terms of Service</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.section}>

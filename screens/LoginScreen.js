@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Image, KeyboardAvoidingView, ScrollView, Platform, Linking } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { useAuth } from '../AuthContext';
+import { resendVerification } from '../api';
 import { recordError } from '../crashlytics';
 import analytics from '../analytics';
 
@@ -34,10 +35,14 @@ export default function LoginScreen({ navigation }) {
             { text: 'OK', style: 'cancel' },
             {
               text: 'Resend Verification',
-              onPress: () => {
-                const subject = encodeURIComponent('Resend Verification Email');
-                const body = encodeURIComponent(`Please resend my verification email.\n\nAccount email: ${email.trim()}`);
-                Linking.openURL(`mailto:info@pinpointrewards.com?subject=${subject}&body=${body}`);
+              onPress: async () => {
+                try {
+                  await resendVerification(email.trim());
+                  Alert.alert('Email Sent', 'Check your inbox for a verification link.');
+                } catch (err) {
+                  recordError(err);
+                  Alert.alert('Error', 'Could not send verification email. Please try again or contact support@pinpointrewards.com.');
+                }
               },
             },
           ]
