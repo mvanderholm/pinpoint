@@ -470,7 +470,7 @@ export default function ProfileScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.navigate('PrivacyPolicy')}>
           <Text style={styles.contactLink}>Privacy Policy</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => Linking.openURL('https://www.pinpointrewards.com/terms/')}>
+        <TouchableOpacity onPress={() => Linking.openURL('https://pinpoint-web-five.vercel.app/terms')}>
           <Text style={styles.contactLink}>Terms of Service</Text>
         </TouchableOpacity>
       </View>

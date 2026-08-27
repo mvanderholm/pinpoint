@@ -4,9 +4,10 @@ import { apiFetch } from '../api';
 import { recordError } from '../crashlytics';
 import analytics from '../analytics';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import MerchantBadges from '../components/MerchantBadges';
 
 export default function MerchantDetailScreen({ route }) {
-  const { merchantId, doublePoints } = route.params;
+  const { merchantId } = route.params;
   const { isWide } = useBreakpoint();
   const [merchant, setMerchant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +93,7 @@ export default function MerchantDetailScreen({ route }) {
           <View style={styles.colLeft}>
             <View style={styles.headerCard}>
               <Image
-                source={{ uri: `https://www.eport9.com/pinpoint/images/logos/${merchantId}_7.gif` }}
+                source={{ uri: `https://pinpoint-web-five.vercel.app/images/logos/${merchantId}_7.gif` }}
                 style={styles.logo}
                 resizeMode="contain"
               />
@@ -103,9 +104,7 @@ export default function MerchantDetailScreen({ route }) {
               <TouchableOpacity style={styles.mapLink} onPress={openMap}>
                 <Text style={styles.mapLinkText}>View on Map ↗</Text>
               </TouchableOpacity>
-              {doublePoints === 1 && (
-                <Image source={require('../assets/BP2X.png')} style={styles.doubleBadge} resizeMode="contain" />
-              )}
+              <MerchantBadges badges={merchant.BADGES} size={22} style={styles.badgeRow} />
             </View>
 
             {merchant.MERCHANT_DESCRIPTION && (
@@ -142,7 +141,7 @@ export default function MerchantDetailScreen({ route }) {
         <>
           <View style={styles.header}>
             <Image
-              source={{ uri: `https://www.eport9.com/pinpoint/images/logos/${merchantId}_7.gif` }}
+              source={{ uri: `https://pinpoint-web-five.vercel.app/images/logos/${merchantId}_7.gif` }}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -153,9 +152,7 @@ export default function MerchantDetailScreen({ route }) {
             <TouchableOpacity style={styles.mapLink} onPress={openMap}>
               <Text style={styles.mapLinkText}>View on Map</Text>
             </TouchableOpacity>
-            {doublePoints === 1 && (
-              <Image source={require('../assets/BP2X.png')} style={styles.doubleBadge} resizeMode="contain" />
-            )}
+            <MerchantBadges badges={merchant.BADGES} size={22} style={styles.badgeRow} />
           </View>
 
           {merchant.MERCHANT_DESCRIPTION && (
@@ -265,10 +262,5 @@ const styles = StyleSheet.create({
   perkText: { fontSize: 14, color: '#333', lineHeight: 20 },
   noPerks: { fontSize: 14, color: '#888' },
 
-  doubleBadge: {
-    alignSelf: 'flex-start',
-    marginTop: 10,
-    height: 28,
-    width: 70,
-  },
+  badgeRow: { alignSelf: 'flex-start', marginTop: 10 },
 });

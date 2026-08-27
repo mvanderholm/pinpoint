@@ -9,6 +9,7 @@ import { recordError } from '../crashlytics';
 import analytics from '../analytics';
 import { useAuth } from '../AuthContext';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import MerchantBadges from '../components/MerchantBadges';
 
 export default function MerchantsScreen({ navigation }) {
   const { marketId } = useAuth();
@@ -87,25 +88,21 @@ export default function MerchantsScreen({ navigation }) {
   const MerchantCard = ({ item }) => (
     <TouchableOpacity
       style={[styles.card, isWide && styles.cardWide]}
-      onPress={() => navigation.navigate('MerchantDetail', { merchantId: item.MERCHANT_ID, name: item.NAME, doublePoints: item.DOUBLE_POINTS })}
+      onPress={() => navigation.navigate('MerchantDetail', { merchantId: item.MERCHANT_ID, name: item.NAME })}
     >
       <View style={styles.cardBody}>
         <Ionicons name="chevron-forward" size={18} color="#ccc" style={styles.chevron} />
         <View style={styles.nameRow}>
           <Image
-            source={{ uri: `https://www.eport9.com/pinpoint/images/logos/${item.MERCHANT_ID}_7.gif` }}
+            source={{ uri: `https://pinpoint-web-five.vercel.app/images/logos/${item.MERCHANT_ID}_7.gif` }}
             style={[styles.logo, isWide && styles.logoWide]}
             resizeMode="contain"
           />
           <View style={styles.nameDetails}>
             <Text style={styles.merchantName}>{item.NAME}</Text>
             <Text style={styles.division}>{item.DIVISION_NAME}</Text>
-            <View style={styles.locationRow}>
-              <Text style={styles.location}>{item.CONSUMER_SITE_DISPLAY}</Text>
-              {item.DOUBLE_POINTS === 1 && (
-                <Image source={require('../assets/BP2X.png')} style={styles.doubleBadge} resizeMode="contain" />
-              )}
-            </View>
+            <Text style={styles.location}>{item.CONSUMER_SITE_DISPLAY}</Text>
+            <MerchantBadges badges={item.BADGES} size={16} style={styles.cardBadges} />
           </View>
         </View>
       </View>
@@ -170,10 +167,22 @@ export default function MerchantsScreen({ navigation }) {
           {filtered.length} {filtered.length === 1 ? 'merchant' : 'merchants'}{activeDivision || query ? ' found' : ' in your area'}
         </Text>
 
-        {merchants.some(m => m.DOUBLE_POINTS === 1) && (
+        {merchants.some(m => m.BADGES?.doublePoints) && (
           <View style={styles.legend}>
             <Image source={require('../assets/BP2X.png')} style={styles.legendBadge} resizeMode="contain" />
             <Text style={styles.legendText}>= Double Points at this merchant</Text>
+          </View>
+        )}
+        {merchants.some(m => m.BADGES?.vip) && (
+          <View style={styles.legend}>
+            <Image source={require('../assets/PinPoint_VIP.jpg')} style={styles.legendBadge} resizeMode="contain" />
+            <Text style={styles.legendText}>= VIP Rewards at this merchant</Text>
+          </View>
+        )}
+        {merchants.some(m => m.BADGES?.buyLocal) && (
+          <View style={styles.legend}>
+            <Image source={require('../assets/PP_BuyLocalStamp.jpg')} style={styles.legendBadge} resizeMode="contain" />
+            <Text style={styles.legendText}>= Buy Local at this merchant</Text>
           </View>
         )}
       </View>
@@ -288,11 +297,7 @@ const styles = StyleSheet.create({
   merchantName: { fontSize: 15, fontWeight: '600', color: '#1a1a1a', marginBottom: 2 },
   division: { fontSize: 12, color: '#888', marginBottom: 2 },
   location: { fontSize: 12, color: '#888' },
-  locationRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 5 },
-  doubleBadge: {
-    height: 24,
-    width: 60,
-  },
+  cardBadges: { marginTop: 4 },
 
   legend: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8 },
   legendBadge: { height: 18, width: 45, marginRight: 6 },

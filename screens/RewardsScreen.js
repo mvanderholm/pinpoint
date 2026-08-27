@@ -92,7 +92,7 @@ export default function RewardsScreen({ navigation }) {
       >
         <View style={styles.rewardTop}>
           <Image
-            source={{ uri: `https://www.eport9.com/pinpoint/images/logos/${merchantId}_7.gif` }}
+            source={{ uri: `https://pinpoint-web-five.vercel.app/images/logos/${merchantId}_7.gif` }}
             style={styles.merchantLogo}
             resizeMode="contain"
           />

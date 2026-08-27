@@ -28,7 +28,7 @@ export default function RewardDetailScreen({ route, navigation }) {
       <Text style={styles.sectionTitle}>Merchant</Text>
       <View style={styles.merchantRow}>
         <Image
-          source={{ uri: `https://www.eport9.com/pinpoint/images/logos/${reward.MERCHANT_ID}_7.gif` }}
+          source={{ uri: `https://pinpoint-web-five.vercel.app/images/logos/${reward.MERCHANT_ID}_7.gif` }}
           style={styles.merchantLogo}
           resizeMode="contain"
         />

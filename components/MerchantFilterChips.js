@@ -26,7 +26,7 @@ export default function MerchantFilterChips({ merchants, selected, onChange }) {
           >
             {m.id && (
               <Image
-                source={{ uri: `https://www.eport9.com/pinpoint/images/logos/${m.id}_7.gif` }}
+                source={{ uri: `https://pinpoint-web-five.vercel.app/images/logos/${m.id}_7.gif` }}
                 style={styles.chipLogo}
                 resizeMode="contain"
               />

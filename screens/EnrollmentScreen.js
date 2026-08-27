@@ -461,11 +461,11 @@ export default function EnrollmentScreen({ navigation }) {
               </View>
               <Text style={styles.tosText}>
                 I agree to the{' '}
-                <Text style={styles.tosLink} onPress={() => Linking.openURL('https://www.pinpointrewards.com/terms/')}>
+                <Text style={styles.tosLink} onPress={() => Linking.openURL('https://pinpoint-web-five.vercel.app/terms')}>
                   Terms of Service
                 </Text>
                 {' '}and{' '}
-                <Text style={styles.tosLink} onPress={() => Linking.openURL('https://www.pinpointrewards.com/privacy/')}>
+                <Text style={styles.tosLink} onPress={() => Linking.openURL('https://pinpoint-web-five.vercel.app/privacy')}>
                   Privacy Policy
                 </Text>
               </Text>
