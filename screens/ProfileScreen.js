@@ -21,10 +21,6 @@ const formatPhone = (raw) => {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
 const GENDERS = [
   { label: 'Male', value: 1 },
   { label: 'Female', value: 2 },
@@ -60,7 +56,6 @@ export default function ProfileScreen({ navigation }) {
   const [editCity, setEditCity] = useState('');
   const [editState, setEditState] = useState('');
   const [editZip, setEditZip] = useState('');
-  const [editBirthMonth, setEditBirthMonth] = useState(0);
   const [editGender, setEditGender] = useState(0);
 
   useEffect(() => { analytics.screen('Profile'); }, []);
@@ -172,7 +167,6 @@ export default function ProfileScreen({ navigation }) {
     setEditCity(member?.CITY || '');
     setEditState(member?.STATE || '');
     setEditZip(member?.ZIP?.trim() || '');
-    setEditBirthMonth(member?.BIRTH_MONTH ?? 0);
     setEditGender(member?.GENDER ?? 0);
     setEditing(true);
   };
@@ -201,8 +195,11 @@ export default function ProfileScreen({ navigation }) {
         state: editState.trim(),
         zip: editZip.trim(),
       };
-      params.birth_month = editBirthMonth;
-      params.wedding_month = 0;
+      // Birth month and anniversary are set once at enrollment and are not
+      // editable here — pass the values already on file (coerced to a number so
+      // CF's numeric validation is satisfied) so neither date gets cleared.
+      params.birth_month = Number(member?.BIRTH_MONTH) || 0;
+      params.wedding_month = Number(member?.WEDDING_MONTH) || 0;
       if (editGender !== null && editGender !== undefined) params.Gender = String(editGender);
 
       await updateProfile(customerId, params);
@@ -222,7 +219,6 @@ export default function ProfileScreen({ navigation }) {
           CITY: editCity.trim() || prev?.CITY,
           STATE: editState.trim() || prev?.STATE,
           ZIP: editZip.trim() || prev?.ZIP,
-          BIRTH_MONTH: editBirthMonth || prev?.BIRTH_MONTH,
           GENDER: editGender ?? prev?.GENDER,
         }));
       }
@@ -293,18 +289,18 @@ export default function ProfileScreen({ navigation }) {
           </View>
 
           <View style={[styles.section, isWide && styles.sectionWide]}>
-            <Text style={styles.sectionTitle}>Birth Month (optional)</Text>
-            <View style={styles.chipGrid}>
-              {MONTHS.map((m, i) => (
-                <TouchableOpacity
-                  key={m}
-                  style={[styles.chip, editBirthMonth === i + 1 && styles.chipActive]}
-                  onPress={() => setEditBirthMonth(editBirthMonth === i + 1 ? 0 : i + 1)}
-                >
-                  <Text style={[styles.chipText, editBirthMonth === i + 1 && styles.chipTextActive]}>{m.slice(0, 3)}</Text>
-                </TouchableOpacity>
-              ))}
+            <Text style={styles.sectionTitle}>Birth Month & Anniversary</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Birth Month</Text>
+              <Text style={styles.value}>{member?.BIRTH_MONTH_DESC?.trim() || 'Not set'}</Text>
             </View>
+            {member?.WEDDING_MONTH > 0 && (
+              <View style={styles.infoRow}>
+                <Text style={styles.label}>Anniversary</Text>
+                <Text style={styles.value}>{member?.WEDDING_MONTH_DESC?.trim()}</Text>
+              </View>
+            )}
+            <Text style={styles.hint}>Contact us to update your birth or anniversary month.</Text>
           </View>
 
           <View style={[styles.section, isWide && styles.sectionWide]}>
@@ -578,6 +574,7 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', marginBottom: 12 },
   label: { fontSize: 13, color: '#888', width: 110, textTransform: 'uppercase', letterSpacing: 0.5 },
   value: { fontSize: 14, color: '#333', flex: 1 },
+  hint: { fontSize: 12, color: '#999', fontStyle: 'italic', marginTop: 4 },
 
   input: {
     borderWidth: 1.5,

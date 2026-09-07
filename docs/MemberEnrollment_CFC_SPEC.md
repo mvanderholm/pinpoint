@@ -20,7 +20,8 @@ Request parameters (client -> CFC)
 - `state` (string) — optional (2-letter preferred).
 - `zip` (string) — optional.
 - `country` (string) — optional, defaults to `US`.
-- `BD1_Month` (number) — optional, birth month for birthday rewards.
+- `BD1_Month` (number) — optional, birth month (1-12) for birthday rewards.
+- `WD1_Month` (number) — optional, anniversary/wedding month (1-12) for anniversary rewards. Stored in `Applications.wd1_month` / `Customers.wedding_date`. Set at enrollment only — the app profile screen displays it read-only.
 - `gender` (number) — optional (0/1/2 mapping used in client).
 - `market_id` (number) — optional or server-assigned market identifier.
 - `PlatformType` (number) — client platform identifier (e.g., 2 for mobile).

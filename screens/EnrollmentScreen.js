@@ -76,6 +76,7 @@ export default function EnrollmentScreen({ navigation }) {
 
   // Step 3 — Personal (optional)
   const [birthMonth, setBirthMonth] = useState(0);
+  const [weddingMonth, setWeddingMonth] = useState(0);
   const [gender, setGender] = useState(0);
   const [tosAccepted, setTosAccepted] = useState(false);
 
@@ -158,6 +159,7 @@ export default function EnrollmentScreen({ navigation }) {
         zip: zip.trim(),
         country: 'US',
         ...(birthMonth > 0 && { BD1_Month: birthMonth }),
+        ...(weddingMonth > 0 && { WD1_Month: weddingMonth }),
         gender,
         market_id: 1,
         PlatformType: 2,
@@ -420,6 +422,24 @@ export default function EnrollmentScreen({ navigation }) {
                   accessibilityLabel={m}
                 >
                   <Text style={[styles.chipText, birthMonth === i + 1 && styles.chipTextActive]}>
+                    {m.slice(0, 3)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.sectionLabel}>Anniversary month (optional)</Text>
+            <View style={styles.chipGrid}>
+              {MONTHS.map((m, i) => (
+                <TouchableOpacity
+                  key={m}
+                  style={[styles.chip, weddingMonth === i + 1 && styles.chipActive]}
+                  onPress={() => setWeddingMonth(weddingMonth === i + 1 ? 0 : i + 1)}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: weddingMonth === i + 1 }}
+                  accessibilityLabel={m}
+                >
+                  <Text style={[styles.chipText, weddingMonth === i + 1 && styles.chipTextActive]}>
                     {m.slice(0, 3)}
                   </Text>
                 </TouchableOpacity>
