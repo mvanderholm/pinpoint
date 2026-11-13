@@ -78,6 +78,7 @@ export default function EnrollmentScreen({ navigation }) {
   const [birthMonth, setBirthMonth] = useState(0);
   const [weddingMonth, setWeddingMonth] = useState(0);
   const [gender, setGender] = useState(0);
+  const [perkCode, setPerkCode] = useState('');
   const [tosAccepted, setTosAccepted] = useState(false);
 
   // Per-field inline errors
@@ -160,6 +161,7 @@ export default function EnrollmentScreen({ navigation }) {
         country: 'US',
         ...(birthMonth > 0 && { BD1_Month: birthMonth }),
         ...(weddingMonth > 0 && { WD1_Month: weddingMonth }),
+        ...(perkCode.trim() && { perk_code: perkCode.trim() }),
         gender,
         market_id: 1,
         PlatformType: 2,
@@ -174,7 +176,7 @@ export default function EnrollmentScreen({ navigation }) {
       const customerId = data?.CustomerID ?? data?.CUSTOMER_ID ?? data?.CUSTOMERID ?? null;
 
       if (type === 2) {
-        analytics.track('SignupSuccess', { email: email.trim(), CustomerID: customerId });
+        analytics.track('SignupSuccess', { email: email.trim(), CustomerID: customerId, perk_code: perkCode.trim() || undefined });
         setStep('success');
       } else if (type === 5) {
         analytics.track('SignupFailed', {
@@ -463,6 +465,20 @@ export default function EnrollmentScreen({ navigation }) {
                 </TouchableOpacity>
               ))}
             </View>
+
+            <Text style={styles.sectionLabel}>Referral code (optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Code from a PinPoint merchant"
+              placeholderTextColor="#9ca3af"
+              value={perkCode}
+              onChangeText={setPerkCode}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={10}
+              accessibilityLabel="Referral code"
+              accessibilityHint="Optional code from a PinPoint merchant or employee"
+            />
           </>
         )}
 

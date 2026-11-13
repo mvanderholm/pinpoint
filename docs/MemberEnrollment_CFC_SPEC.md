@@ -23,6 +23,7 @@ Request parameters (client -> CFC)
 - `BD1_Month` (number) — optional, birth month (1-12) for birthday rewards.
 - `WD1_Month` (number) — optional, anniversary/wedding month (1-12) for anniversary rewards. Stored in `Applications.wd1_month` / `Customers.wedding_date`. Set at enrollment only — the app profile screen displays it read-only.
 - `gender` (number) — optional (0/1/2 mapping used in client).
+- `perk_code` (string, max 10 chars) — optional. Looked up against `Merchant_Perks` (matches either its numeric `Perk_ID` or its `Code` column); resolves to `Perk_ID = 0` silently if not found — no error is surfaced to the client either way. Stored on the application as `Applications.perk_id`. Used by merchants to attribute a signup to the employee/code that referred it (sign-up competitions); not validated against a specific merchant.
 - `market_id` (number) — optional or server-assigned market identifier.
 - `PlatformType` (number) — client platform identifier (e.g., 2 for mobile).
 
